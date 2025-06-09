@@ -1,3 +1,5 @@
 Arcanum: Of Steamworks and Magick Obscura|$HOME/.local/share/Steam/steamapps/common/Arcanum/Arcanum/modules/Arcanum/Save
 Wolfenstein: The New Order|$HOME/.local/share/Steam/steamapps/compatdata/201810/pfx/drive_c/users/steamuser/Saved Games/MachineGames
-Dark Souls 3|$HOME/.local/share/Steam/steamapps/compatdata/374320/pfx/drive_c/Users/<username>/AppData/Roaming/DarkSoulsIII/
+Dark Souls 3|$HOME/.local/share/Steam/steamapps/compatdata/374320/pfx/drive_c/Users/<username>/AppData/Roaming/DarkSoulsIII
+Europa Universalis IV (Native)|$HOME/.local/share/Paradox Interactive/Europa Universalis IV/save games
+The Elder Scrolls Online Addons|$HOME/.local/share/Steam/steamapps/compatdata/306130/pfx/drive_c/users/steamuser/Documents/Elder Scrolls Online/live/AddOns

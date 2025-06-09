@@ -1,4 +1,7 @@
 #!/bin/bash
+# created by eric5949 (eric5949@outlook.com)
+# i did this manually for a couple years and finally got tired of it. this should make things easier for me and if you can make use of it then great.
+
 source "$HOME/bin/ncsync.env"  # we do need these if they exist already for some functions.
 logcheck() { # check if this script has created its log in the NCSOURCE folder
     echo "starting ${FUNCNAME[0]}"
@@ -30,9 +33,19 @@ ncservice_check() { # Check if the ncsync service exists already.
 }
 ncservice_exist() { # The ncsync service already exists.
     echo "starting ${FUNCNAME[0]}"
-    zenity --info --text="Service Exists."
-    definition_seleciton
-
+    if [ "$UPDATE" = "TRUE " ];  then
+    ncenv_creation
+    else
+    CHOICE=$(zenity --list --title="What to do?" --column="Options" \ "Service exists, what to do?" \
+    "Update Service" "Sync Saves" --height=600 )
+    echo "CHOICE selected: $CHOICE"
+    fi
+    if [ "$CHOICE" = "Update Service" ]; then
+        ncenv_creation
+    elif [ "$CHOICE" = "Sync Saves" ]; then
+        UPDATE= "TRUE"
+        definition_seleciton
+    fi
 }
 ncservice_missing() { # The ncsync service does not exist. inform the user, create directories, and install nextcloud flatpak if it isnt already.
     echo "starting ${FUNCNAME[0]}"
@@ -123,9 +136,18 @@ OnUnitInactiveSec=5m
 WantedBy=timers.target
 EOF
     NCDEST=$(echo "$NCFOLDERS" | cut -d: -f1)
+    if [ "$UPDATE" = "TRUE " ];  then
+    mkdir -p "$NCDEST"
+    systemctl --user stop ncsync.service ncsync.timer
+    systemctl --user disable ncsync.service ncsync.timer
+    systemctl --user daemon-real
+    systemctl --user enable ncsync.service ncsync.timer
+    systemctl --user start ncsync.service ncsync.timer
+    else
     mkdir -p "$NCDEST"
     systemctl --user enable ncsync.service ncsync.timer
     systemctl --user start ncsync.service ncsync.timer
+    fi
     zenity --info --text="Once your files are synced, re-run this script to add games or place the synced files in their correct location."
 }
 definition_seleciton() { # ask the user how we will define the save game locations
@@ -143,7 +165,7 @@ choose_game() { # choose from the list of supported games
     echo "starting ${FUNCNAME[0]}"
     zenity --info --text="If you want to help add games to this list for other users, find the location of the games' save files and provide it to the guy who wrote this."
     GAMES=$(cut -d'|' -f1 ./supportedgames.txt | sed 's/"//g')
-    GAMENAME=$(echo "$GAMES" | zenity --list --title="Select a Game" --column="Games")
+    GAMENAME=$(echo "$GAMES" | zenity --list --title="Select a Game" --column="Games" --width=600 --height=600 )
     SAVEGAMEFOLDER=$(grep -i "^$GAMENAME|" ./supportedgames.txt | cut -d'|' -f2)
     SAVEGAMEFOLDER=$(eval echo "$SAVEGAMEFOLDER")
     echo "GAME: $GAMENAME FOLDER: $SAVEGAMEFOLDER"
@@ -162,7 +184,7 @@ define_folder() { # let the user define the folder we're going to link.
 whattolink(){ # csgames.txt folder already exists, what are we doing here?
     echo "starting  ${FUNCNAME[0]}"
     CHOICE=$(zenity --list --title="Files should already be syncing." --column="Options" \ "What are we doing??" \
-    "Placing cloudsave folders in their correct locations on another PC" "Adding a game to the list")
+    "Placing cloudsave folders in their correct locations on another PC" "Adding a game to the list" "Update Service")
     echo "CHOICE selected: $CHOICE"
 
     if [ "$CHOICE" = "Placing cloudsave folders in their correct locations on another PC" ]; then
@@ -170,6 +192,10 @@ whattolink(){ # csgames.txt folder already exists, what are we doing here?
         link_existing
     elif [ "$CHOICE" = "Adding a game to the list" ]; then
         definition_seleciton
+    elif [ "$CHOICE" = "Update Service" ]; then
+        UPDATE="TRUE"
+        cloud_selector
+
     fi
 }
 link_existing(){ # we run the link_savefile function for every game in csgames.txt
