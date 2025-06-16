@@ -87,23 +87,19 @@ create_ncservice() { # Create and start the ncsync service, script and timer.
     echo "starting ${FUNCNAME[0]}"
     cat <<'EOF' > $HOME/bin/ncsync.sh
 #!/bin/bash
-
 source "$HOME/bin/ncsync.env"
-
 NCCMD="flatpak run --command=/app/bin/nextcloudcmd com.nextcloud.desktopclient.nextcloud"
-
 if pgrep nextcloudcmd; then
     true    # skip this run if a sync is already ongoing
 else
-
     for ENTRY in "${NCFOLDERS[@]}"; do
         NCDEST=$(echo "$ENTRY" | cut -d: -f1)
         NCSOURCE=$(echo "$ENTRY" | cut -d: -f2)
-        $NCCMD --user "$NCUSER" --password "$NCPASS" --path "/$NCSOURCE" "$NCDEST"   "https://$NCSERV" 2>> "$HOME/ncsync.log"
+        SAFE_ENTRY=$(echo "$ENTRY" | sed 's/[^A-Za-z0-9_.-]/_/g')
+        echo "" > "$HOME/ncsync$SAFE_ENTRY.log"
+        $NCCMD --user "$NCUSER" --password "$NCPASS" --path "/$NCSOURCE" "$NCDEST"   "https://$NCSERV" 2>> "$HOME/ncsync$SAFE_ENTRY.log"
     done
-
 fi
-
 exit 0
 EOF
     chmod +x "$HOME/bin/ncsync.sh"
